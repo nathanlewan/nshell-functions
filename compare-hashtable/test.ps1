@@ -1,9 +1,7 @@
-#import-module PesterMatchHashtable
-
 Describe 'HCCHashCompare' {
-    Context 'modified-attributes' {
+    Context 'attributes' {
 
-        it 'should return hashtable with ADDED, MODIFIED, and DELETED keys with blank hashtables for values' {
+        it 'should return hashtable with 3 main keys having blank hashtables for values' {
             $initialObject = $null
             $newObject = $null
 
@@ -13,9 +11,39 @@ Describe 'HCCHashCompare' {
 
             $test.GetType().name | should be "Hashtable"
             $test.count | should be 3
-            $test.ADDED | should MatchHashTable @{}
-            $test.MODIFIED | should MatchHashTable @{}
-            $test.DELETED | should MatchHashTable @{}
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 0
+        }
+
+        it 'should return hashtable with 3 main keys having blank hashtables for values' {
+            $initialObject = ""
+            $newObject = ""
+
+            $test = $null
+            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+
+
+            $test.GetType().name | should be "Hashtable"
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 0
+        }
+
+        it 'should return hashtable with 3 main keys having blank hashtables for values' {
+            $initialObject = @{}
+            $newObject = @{}
+
+            $test = $null
+            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+
+
+            $test.GetType().name | should be "Hashtable"
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 0
         }
 
         it 'should return hashtable with ADDED equalled to USERNAME = ALICE' {
@@ -29,10 +57,12 @@ Describe 'HCCHashCompare' {
 
             $test.GetType().name | should be "Hashtable"
             $test.count | should be 3
-            $test.ADDED | should MatchHashTable @{ username = "Alice" }
-            $test.MODIFIED | should MatchHashTable @{}
-            $test.DELETED | should MatchHashTable @{}
+            $test.ADDED.count | should be 1
+            $test.ADDED.get_item("username") | should be "Alice"
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 0
         }
+
 
         it 'should return hashtable with MODIFIED equalled to USERNAME = JERRY' {
             $initialObject = @{
@@ -45,11 +75,11 @@ Describe 'HCCHashCompare' {
             $test = $null
             $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
 
-            $test.GetType().name | should be "Hashtable"
             $test.count | should be 3
-            $test.ADDED | should MatchHashTable @{}
-            $test.MODIFIED | should MatchHashTable @{ username = "Jerry" }
-            $test.DELETED | should MatchHashTable @{}
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.get_item("username") | should be "Jerry"
+            $test.MODIFIED.count | should be 1
+            $test.REMOVED.count | should be 0
         }
 
         it 'should return hashtable with REMOVED equalled to USERNAME = BOB' {
@@ -62,12 +92,38 @@ Describe 'HCCHashCompare' {
             $test = $null
             $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
 
-            $test.GetType().name | should be "Hashtable"
             $test.count | should be 3
-            $test.ADDED | should MatchHashTable @{}
-            $test.MODIFIED | should MatchHashTable @{}
-            $test.DELETED | should MatchHashTable @{ username = "Bob" }
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 1
+            $test.REMOVED.get_item("username") | should be "Bob"
         }
+
+        it 'should return hashtable with simple added, modifed, and removed entries' {
+            $initialObject = @{
+                username = "bobErator";
+                firstname = "bob";
+                lastname = "erator";
+            }
+            $newObject = @{
+                username = "bobErator";
+                firstname = "robert";
+                middlename = "robot";
+            }
+
+            $test = $null
+            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 1
+            $test.MODIFIED.count | should be 1
+            $test.REMOVED.count | should be 1
+            $test.ADDED.get_item("middlename") | should be "robot"
+            $test.MODIFIED.get_item("firstname") | should be "robert"
+            $test.REMOVED.get_item("lastname") | should be "erator"
+        }
+
+
 
     }
 

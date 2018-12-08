@@ -17,22 +17,6 @@ function HCChashCompare {
     }
 
 
-    # internal functions
-    
-    function defineInitialVars {
-
-        # preliminary status definitions
-        $rootItemStatus = "notChecked"
-        $itemOutADDEDStatus = "empty"
-        $itemOutMODIFIEDStatus = "empty"
-        $itemOutREMOVEDStatus = "empty"
-
-    }
-
-
-
-
-
 
 
     # create return object
@@ -43,24 +27,30 @@ function HCChashCompare {
 
 
 
+    function checkItems {
+        param ( $hashA, $hashB, $checkType )
 
-    # loop through items in newObject
-    foreach ( $rootItem in $newObject.GetEnumerator() ) {
+        # loop through items in hashA
+        foreach ( $rootItem in $hashA.GetEnumerator() ) {
 
-        # key value pair we are looking at
-        $rootItemKey = $rootItem.key
-        $rootItemValue = $rootItem.value
+            # key value pair we are looking at
+            $rootItemKey = $rootItem.key
+            $rootItemValue = $rootItem.value
 
-        defineInitialVars
+            #initialize status checks
+            $rootItemStatus = "notChecked"
+            $itemOutADDEDStatus = "empty"
+            $itemOutMODIFIEDStatus = "empty"
+            $itemOutREMOVEDStatus = "empty"
 
-        # find out if $initialObject contains this item
-            if ( $initialObject.get_item($rootItemKey) ) {
+            # find out if $hashB contains this item
+            if ( $hashB.get_item($rootItemKey) ) {
                 
-                # if $initialObject contains this item, is it modifed?
-                $initVal = $initialObject.get_item($rootItemKey)
-                $newVal = $newObject.get_item($rootItemKey)
+                # if $hashB contains this item, is it modifed?
+                $valA = $hashA.get_item($rootItemKey)
+                $valB = $hashB.get_item($rootItemKey)
 
-                if ( $initVal -eq $newVal ) {
+                if ( $valA -eq $valB ) {
                     $rootItemStatus = "dataMatches"
                 } else {
                     $rootItemStatus = "dataMismatch"
@@ -68,56 +58,31 @@ function HCChashCompare {
 
             } else {
                 
-                $rootItemStatus = "newItem"
-            }
-
-        # find out if we already have data in our $returnObject
-            if ( $returnObject.ADDED.count -ne 0 ) {
-                $itemOutADDEDStatus = "notEmpty"
-            }
-            if ( $returnObject.MODIFIED.count -ne 0 ) {
-                $itemOutMODIFIEDStatus = "notEmpty"
-            }
-            if ( $returnObject.DELETED.count -ne 0 ) {
-                $itemOutDeletedStatus = "notEmpty"
+                $rootItemStatus = "uniqueItem"
             }
 
 
-        if ( $rootItemStatus -eq "newItem" ) {
-            $returnObject.ADDED.add( $rootItemKey, $rootItemValue )
+            if ( ($rootItemStatus -eq "uniqueItem") -and ($checkType -eq "additions") ) {
+                $returnObject.ADDED.add( $rootItemKey, $rootItemValue )
+            }
+
+            if ( ($rootItemStatus -eq "uniqueItem") -and ($checkType -eq "removals") ) {
+                $returnObject.REMOVED.add( $rootItemKey, $rootItemValue )
+            }
+
+            if ( $rootItemStatus -eq "dataMismatch" ) {
+                if ( ! $returnObject.MODIFIED.contains($rootItemKey) ) {
+                    $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
+                }
+                
+            }
+
         }
-
-        if ( $rootItemStatus -eq "dataMismatch" ) {
-            $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
-        }
-
     }
 
-    # loop through items in initialObject
-    #foreach ( $rootItem in $initialObject.GetEnumerator() ) {
-
-    #    defineInitialVars
-
-    #}
-
+    checkItems -hashA $newObject -hashB $initialObject -checkType "additions"
+    checkItems -hashA $initialObject -hashB $newObject -checkType "removals"
 
 
     return $returnObject
 }
-
-
-
-
-
-
-
-
-$initialObject = @{
-                username = "Bob";
-            }
-            $newObject = @{
-            username = "Mary";
-            }
-
-$test = $null
-$test = HCCHashCompare -initialObject $initialObject -newObject $newObject
