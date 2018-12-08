@@ -1,4 +1,4 @@
-Describe 'HCCHashCompare' {
+Describe 'compare-hashtable' {
     Context 'attributes' {
 
         it 'should return hashtable with 3 main keys having blank hashtables for values' {
@@ -6,7 +6,7 @@ Describe 'HCCHashCompare' {
             $newObject = $null
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
 
             $test.GetType().name | should be "Hashtable"
@@ -21,7 +21,7 @@ Describe 'HCCHashCompare' {
             $newObject = ""
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
 
             $test.GetType().name | should be "Hashtable"
@@ -36,7 +36,7 @@ Describe 'HCCHashCompare' {
             $newObject = @{}
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
 
             $test.GetType().name | should be "Hashtable"
@@ -53,7 +53,7 @@ Describe 'HCCHashCompare' {
             }
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
             $test.GetType().name | should be "Hashtable"
             $test.count | should be 3
@@ -73,7 +73,7 @@ Describe 'HCCHashCompare' {
             }
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
             $test.count | should be 3
             $test.ADDED.count | should be 0
@@ -90,7 +90,7 @@ Describe 'HCCHashCompare' {
             }
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
             $test.count | should be 3
             $test.ADDED.count | should be 0
@@ -112,7 +112,7 @@ Describe 'HCCHashCompare' {
             }
 
             $test = $null
-            $test = HCCHashCompare -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
 
             $test.count | should be 3
             $test.ADDED.count | should be 1

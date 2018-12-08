@@ -1,10 +1,9 @@
-function HCChashCompare {
+function compare-hashtable {
 
     param (
         $initialObject,
         $newObject
     )
-
 
 
 
@@ -15,7 +14,6 @@ function HCChashCompare {
     if ( ($null -eq $newObject) -or ("" -eq $newObject) ) {
         $newObject = @{}
     }
-
 
 
 
@@ -79,6 +77,8 @@ function HCChashCompare {
 
         }
     }
+
+
 
     checkItems -hashA $newObject -hashB $initialObject -checkType "additions"
     checkItems -hashA $initialObject -hashB $newObject -checkType "removals"
