@@ -1,5 +1,5 @@
 Describe 'compare-hashtable' {
-    Context 'attributes' {
+    Context 'simple attributes' {
 
         it 'should return hashtable with 3 main keys having blank hashtables for values' {
             $initialObject = $null
@@ -63,6 +63,23 @@ Describe 'compare-hashtable' {
             $test.REMOVED.count | should be 0
         }
 
+        it 'should return hashtable with REMOVED equalled to USERNAME = ALICE' {
+            $initialObject = @{
+                username = "Alice";
+            }
+            $newObject = $null
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.GetType().name | should be "Hashtable"
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.REMOVED.get_item("username") | should be "Alice"
+            $test.MODIFIED.count | should be 0
+            $test.REMOVED.count | should be 1
+        }
+
 
         it 'should return hashtable with MODIFIED equalled to USERNAME = JERRY' {
             $initialObject = @{
@@ -123,7 +140,58 @@ Describe 'compare-hashtable' {
             $test.REMOVED.get_item("lastname") | should be "erator"
         }
 
+        it 'should return hashtable with 2 modified entries' {
+            $initialObject = @{
+                username = "bobErator";
+                firstname = "bob";
+                lastname = "erator";
+            }
+            $newObject = @{
+                username = "bobErator";
+                firstname = "change";
+                lastname = "change";
+            }
 
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 2
+            $test.REMOVED.count | should be 0
+            $test.MODIFIED.get_item("firstname") | should be "change"
+            $test.MODIFIED.get_item("lastname") | should be "change"
+        }
+
+    }
+
+    context 'multivalue attributes: hashtable' {
+
+        it 'should return hashtable with user1 - firstname modified' {
+            $initialObject = @{
+                user1 = @{
+                    firstname = "nathan"
+                    lastname = "lewan"
+                }
+            }
+            $newObject = @{
+                user1 = @{
+                    firstname = "sofie"
+                    lastname = "lewan"
+                }
+
+            }
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 1
+            $test.REMOVED.count | should be 0
+            $test.MODIFIED.get_item("user1").firstname | should be "sofie"
+            $test.MODIFIED.get_item("user1").firstname.count | should be 1
+        }
 
     }
 

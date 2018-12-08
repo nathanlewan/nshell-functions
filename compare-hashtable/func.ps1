@@ -7,6 +7,7 @@ function compare-hashtable {
 
 
 
+
     # handle if null or empty strings are sent
     if ( ($null -eq $initialObject) -or ("" -eq $initialObject) ) {
         $initialObject = @{}
@@ -14,6 +15,7 @@ function compare-hashtable {
     if ( ($null -eq $newObject) -or ("" -eq $newObject) ) {
         $newObject = @{}
     }
+
 
 
 
@@ -37,6 +39,7 @@ function compare-hashtable {
 
             #initialize status checks
             $rootItemStatus = "notChecked"
+            $rootItemType = "notChecked"
             $itemOutADDEDStatus = "empty"
             $itemOutMODIFIEDStatus = "empty"
             $itemOutREMOVEDStatus = "empty"
@@ -52,6 +55,7 @@ function compare-hashtable {
                     $rootItemStatus = "dataMatches"
                 } else {
                     $rootItemStatus = "dataMismatch"
+                    $rootItemType = $valA.GetType().name.tostring()
                 }
 
             } else {
@@ -70,7 +74,17 @@ function compare-hashtable {
 
             if ( $rootItemStatus -eq "dataMismatch" ) {
                 if ( ! $returnObject.MODIFIED.contains($rootItemKey) ) {
-                    $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
+                    switch ($rootItemType) {
+                        "hashtable" {
+                            $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
+                            checkItems -hashA $newObject.$rootItemKey -hashB $initialObject.$rootItemKey -checkType "additions"
+                            checkItems -hashA $initialObject.$rootItemKey -hashB $newObject.$rootItemKey -checkType "removals"
+                        }
+                        default {
+                            $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
+                        }
+                    }
+                    
                 }
                 
             }
@@ -78,11 +92,30 @@ function compare-hashtable {
         }
     }
 
-
-
     checkItems -hashA $newObject -hashB $initialObject -checkType "additions"
     checkItems -hashA $initialObject -hashB $newObject -checkType "removals"
 
 
     return $returnObject
 }
+
+
+
+
+
+            $initialObject = @{
+                user1 = @{
+                    firstname = "nathan"
+                    lastname = "lewan"
+                }
+            }
+            $newObject = @{
+                user1 = @{
+                    firstname = "sofie"
+                    lastname = "lewan"
+                }
+
+            }
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
