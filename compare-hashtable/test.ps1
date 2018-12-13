@@ -190,7 +190,34 @@ Describe 'compare-hashtable' {
             $test.MODIFIED.count | should be 1
             $test.REMOVED.count | should be 0
             $test.MODIFIED.get_item("user1").firstname | should be "sofie"
-            $test.MODIFIED.get_item("user1").firstname.count | should be 1
+            $test.MODIFIED.get_item("user1").count | should be 1
+        }
+
+        it 'should return hashtable with user1 - firstname modified, lastname modified' {
+            $initialObject = @{
+                user1 = @{
+                    firstname = "nathan"
+                    lastname = "lewan"
+                }
+            }
+            $newObject = @{
+                user1 = @{
+                    firstname = "sofie"
+                    lastname = "awkwardness"
+                }
+
+            }
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 1
+            $test.REMOVED.count | should be 0
+            $test.MODIFIED.get_item("user1").firstname | should be "sofie"
+            $test.MODIFIED.get_item("user1").lastname | should be "awkwardness"
+            $test.MODIFIED.get_item("user1").count | should be 2
         }
 
     }

@@ -28,7 +28,7 @@ function compare-hashtable {
 
 
     function checkItems {
-        param ( $hashA, $hashB, $checkType )
+        param ( $hashA, $hashB, $checkType, $recurse, $recurseItem )
 
         # loop through items in hashA
         foreach ( $rootItem in $hashA.GetEnumerator() ) {
@@ -55,7 +55,7 @@ function compare-hashtable {
                     $rootItemStatus = "dataMatches"
                 } else {
                     $rootItemStatus = "dataMismatch"
-                    $rootItemType = $valA.GetType().name.tostring()
+                    $rootItemType = $rootItemValue.GetType().name.tostring()
                 }
 
             } else {
@@ -74,26 +74,33 @@ function compare-hashtable {
 
             if ( $rootItemStatus -eq "dataMismatch" ) {
                 if ( ! $returnObject.MODIFIED.contains($rootItemKey) ) {
-                    switch ($rootItemType) {
-                        "hashtable" {
-                            $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
-                            checkItems -hashA $newObject.$rootItemKey -hashB $initialObject.$rootItemKey -checkType "additions"
-                            checkItems -hashA $initialObject.$rootItemKey -hashB $newObject.$rootItemKey -checkType "removals"
-                        }
-                        default {
+                    if ($rootItemType -eq "Hashtable") {
+                        $returnObject.MODIFIED.add( $rootItemKey, @{} )
+                        checkItems -hashA $valA -hashB $valB -checkType "additions" -recurse $true -recurseItem $rootItemKey
+                        checkItems -hashA $valB -hashB $valA -checkType "removals" -recurse $true -recurseItem $rootItemKey
+
+                    } else {
+                        if ($recurse) {
+                            if (! $returnObject.MODIFIED.$recurseItem.contains($rootItemKey)) {
+                                $returnObject.MODIFIED.$recurseItem.add($rootItemKey, $rootItemValue)
+                            }
+                        } else {
                             $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
                         }
                     }
-                    
                 }
-                
+                            
             }
 
         }
     }
 
-    checkItems -hashA $newObject -hashB $initialObject -checkType "additions"
-    checkItems -hashA $initialObject -hashB $newObject -checkType "removals"
+    function checkNestedHashTable {
+        param ( $nestHashA, $nestHashB, $nestCheckType )
+    }
+
+    checkItems -hashA $newObject -hashB $initialObject -checkType "additions" -rescurse $false
+    checkItems -hashA $initialObject -hashB $newObject -checkType "removals" -recurse $false
 
 
     return $returnObject
