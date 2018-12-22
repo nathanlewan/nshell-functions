@@ -220,6 +220,70 @@ Describe 'compare-hashtable' {
             $test.MODIFIED.get_item("user1").count | should be 2
         }
 
+        it 'should return hashtable with user1 and user2 - firstname modified' {
+            $initialObject = @{
+                user1 = @{
+                    firstname = "nathan"
+                    lastname = "lewan"
+                }
+                user2 = @{
+                    firstname = "sofie"
+                    lastname = "lewan"
+                }
+            }
+            $newObject = @{
+                user1 = @{
+                    firstname = "nathaniel"
+                    lastname = "lewan"
+                }
+                user2 = @{
+                    firstname = "sof"
+                    lastname = "lewan"
+                }
+
+            }
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 2
+            $test.REMOVED.count | should be 0
+            $test.MODIFIED.get_item("user1").firstname | should be "nathaniel"
+            $test.MODIFIED.get_item("user1").count | should be 1
+            $test.MODIFIED.get_item("user2").firstname | should be "sof"
+            $test.MODIFIED.get_item("user2").count | should be 1
+        }
+
+        it 'should return hashtable with user1 - firstname removed' {
+            $initialObject = @{
+                user1 = @{
+                    firstname = "nathan"
+                    lastname = "lewan"
+                }
+            }
+            $newObject = @{
+                user1 = @{
+                    firstname = "nathaniel"
+                    lastname = "lewan"
+                }
+
+            }
+
+            $test = $null
+            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+
+            $test.count | should be 3
+            $test.ADDED.count | should be 0
+            $test.MODIFIED.count | should be 2
+            $test.REMOVED.count | should be 0
+            $test.MODIFIED.get_item("user1").firstname | should be "nathaniel"
+            $test.MODIFIED.get_item("user1").count | should be 1
+            $test.MODIFIED.get_item("user2").firstname | should be "sof"
+            $test.MODIFIED.get_item("user2").count | should be 1
+        }
+
     }
 
 }

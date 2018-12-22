@@ -25,6 +25,9 @@ function compare-hashtable {
     $returnObject.add("MODIFIED",@{})
     $returnObject.add("REMOVED",@{})
 
+    # create recursive path
+    $global:recursePath = $null
+
 
 
     function checkItems {
@@ -36,6 +39,12 @@ function compare-hashtable {
             # key value pair we are looking at
             $rootItemKey = $rootItem.key
             $rootItemValue = $rootItem.value
+
+            if ( $null -eq $global:recursePath ) {
+                $global:recursePath = $rootItemKey
+            } else {
+                $global:recursePath = $global:recursePath + "." + $rootItemKey
+            }
 
             #initialize status checks
             $rootItemStatus = "notChecked"
@@ -75,18 +84,9 @@ function compare-hashtable {
             if ( $rootItemStatus -eq "dataMismatch" ) {
                 if ( ! $returnObject.MODIFIED.contains($rootItemKey) ) {
                     if ($rootItemType -eq "Hashtable") {
-                        $returnObject.MODIFIED.add( $rootItemKey, @{} )
-                        checkItems -hashA $valA -hashB $valB -checkType "additions" -recurse $true -recurseItem $rootItemKey
-                        checkItems -hashA $valB -hashB $valA -checkType "removals" -recurse $true -recurseItem $rootItemKey
-
+                        #
                     } else {
-                        if ($recurse) {
-                            if (! $returnObject.MODIFIED.$recurseItem.contains($rootItemKey)) {
-                                $returnObject.MODIFIED.$recurseItem.add($rootItemKey, $rootItemValue)
-                            }
-                        } else {
-                            $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
-                        }
+                        $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
                     }
                 }
                             
@@ -114,12 +114,20 @@ function compare-hashtable {
                 user1 = @{
                     firstname = "nathan"
                     lastname = "lewan"
+                    food = @{
+                        favorite = "sushi"
+                        yuck = "squid"
+                    }
                 }
             }
             $newObject = @{
                 user1 = @{
-                    firstname = "sofie"
+                    firstname = "nathan"
                     lastname = "lewan"
+                    food = @{
+                        favorite = "sushi"
+                        yuck = "octopus"
+                    }
                 }
 
             }
