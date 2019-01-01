@@ -1,3 +1,29 @@
+$initialObject = @{
+    user1 = @{
+        firstname = "nathan"
+        lastname = "lewan"
+        yes ="no"
+        entry = @("1", "2", @("3", @("3", "4")))
+    }
+}
+$newObject = @{
+    user1 = @{
+        lastname = "lewan"
+        yes ="no"
+        entry = @("1", "2", @("3", "5"))
+    }
+}
+
+
+clear
+
+HCCcompare -objA $initialObject -objB $newObject -spaces "  " -objType "Hashtable"
+
+
+
+exit
+
+
 Describe 'compare-hashtable' {
     Context 'simple attributes' {
 
