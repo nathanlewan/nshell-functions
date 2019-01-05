@@ -1,17 +1,8 @@
 $initialObject = @{
-    user1 = @{
-        firstname = "nathan"
-        lastname = "lewan"
-        yes ="no"
-        entry = @("1", "2", @("3", @("3", "4")))
-    }
+    food = @{fruits = @("orange", "grapes")}
 }
 $newObject = @{
-    user1 = @{
-        lastname = "lewan"
-        yes ="no"
-        entry = @("1", "2", @("3", "5"))
-    }
+    food = @{fruits = @("bananna")}
 }
 
 
