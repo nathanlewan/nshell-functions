@@ -1,12 +1,18 @@
 $initialObject = @{
-    food = @{fruits = @("orange", "grapes")}
+    people = @{
+        user1 = @("ralph", @("ralphie", "ralphish", "ralphina"))
+        user2 = @("henry", @("henrietta", "henhen", "whumpy", @("ok", "maybe")))
+    }
 }
 $newObject = @{
-    food = @{fruits = @("bananna")}
+    peeps = @{
+        user1 = @("ralph", @("ralphie", "ralphish", "ralphina"))
+        user2 = @("henry", @("henrietta", "henhen", "whumpy", @("ok", "maybe not")))
+    }
 }
 
 
-clear
+clear-host
 
 HCCcompare -objA $initialObject -objB $newObject -spaces "  " -objType "Hashtable"
 
