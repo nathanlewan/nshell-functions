@@ -272,7 +272,7 @@ Describe 'compare-hashtable' {
             }
 
             $test = $null
-            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
+            $test = compare-hashtable -objA $initialObject -objB $newObject -spaces " " -objType "Hashtable"
 
             $test.count | should be 3
             $test.ADDED.count | should be 0

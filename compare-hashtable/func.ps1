@@ -1,7 +1,54 @@
 function compare-hashtable {
 
-    param ( $objA, $objB, $spaces, $objType )
+    param ( 
+        
+        [parameter(
+            Mandatory = $false,
+            Position = 0,
+            HelpMessage = "The first HashTable Object that you want to compare"
+        )]
+        [Alias("initialObject")]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [AllowEmptyCollection()]
+        $objA,
+        
+        [parameter(
+            Mandatory = $false,
+            Position = 1,
+            HelpMessage = "The second HashTable Object that you want to compare"
+        )]
+        [Alias("newObject")]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [AllowEmptyCollection()]
+        $objB, 
+        
+        [parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "When printing out info as a string, how big the indent should be (handled automatically)"
+        )]
+        [Alias("indent")]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [AllowEmptyCollection()]
+        $spaces, 
+        
+        [parameter(
+            Mandatory = $false,
+            Position = 3,
+            HelpMessage = "used when called recursively to identify what we are recursing over (handled automatically)"
+        )]
+        [Alias("type")]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [AllowEmptyCollection()]
+        $objType 
+    
+    )
    
+
     if ( $objType -eq "Hashtable") {
         
         foreach ( $level in $objA.getenumerator() ) {
@@ -19,7 +66,7 @@ function compare-hashtable {
                 write-host "$spaces [$levelType]: $($level.key)"
 
                 if ( $objB.contains($level.key) ) {
-                    HCCcompare -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+                    compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
                     continue
                 } else {
                     write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
@@ -32,7 +79,7 @@ function compare-hashtable {
                 write-host "$spaces [$levelType]: $( $level.key )"
 
                 if ( $objB.contains($level.key) ) {
-                    HCCcompare -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+                    compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
                     continue
                 } else {
                     write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
@@ -84,12 +131,12 @@ function compare-hashtable {
             }
               
             if ( $levelType -eq "Array" ) {
-                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
                 continue 
             }
             
             if ( $levelType -eq "Hashtable" ) {
-                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
                 continue
             }
             
@@ -138,12 +185,12 @@ function compare-hashtable {
             }
               
             if ( $levelType -eq "Array" ) {
-                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
                 continue
             }
             
             if ( $levelType -eq "Hashtable" ) {
-                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
                 continue
             }
             
