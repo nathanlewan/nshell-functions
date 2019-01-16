@@ -1,26 +1,3 @@
-$initialObject = @{
-    people = @{
-        user1 = @("ralph", @("ralphie", "ralphish", "ralphina"))
-        user2 = @("henry", @("henrietta", "henhen", "whumpy", @("ok", "maybe")))
-    }
-}
-$newObject = @{
-    peeps = @{
-        user1 = @("ralph", @("ralphie", "ralphish", "ralphina"))
-        user2 = @("henry", @("henrietta", "henhen", "whumpy", @("ok", "maybe not")))
-    }
-}
-
-
-clear-host
-
-HCCcompare -objA $initialObject -objB $newObject -spaces "  " -objType "Hashtable"
-
-
-
-exit
-
-
 Describe 'compare-hashtable' {
     Context 'simple attributes' {
 

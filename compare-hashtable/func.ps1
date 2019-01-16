@@ -1,136 +1,176 @@
 function compare-hashtable {
 
-    param (
-        $initialObject,
-        $newObject
-    )
+    param ( $objA, $objB, $spaces, $objType )
+   
+    if ( $objType -eq "Hashtable") {
+        
+        foreach ( $level in $objA.getenumerator() ) {
 
+            $levelType = $( $obja.$($level.key).gettype().name ).tostring()
 
+            if ( $levelType -eq "Object[]" ) {
 
+                $levelType = $( $($obja.$($level.key).GetType()).basetype.name ).tostring()
 
-    # handle if null or empty strings are sent
-    if ( ($null -eq $initialObject) -or ("" -eq $initialObject) ) {
-        $initialObject = @{}
-    }
-    if ( ($null -eq $newObject) -or ("" -eq $newObject) ) {
-        $newObject = @{}
-    }
-
-
-
-
-    # create return object
-    $returnObject = @{}
-    $returnObject.add("ADDED",@{})
-    $returnObject.add("MODIFIED",@{})
-    $returnObject.add("REMOVED",@{})
-
-    # create recursive path
-    $global:recursePath = $null
-
-
-
-    function checkItems {
-        param ( $hashA, $hashB, $checkType, $recurse, $recurseItem )
-
-        # loop through items in hashA
-        foreach ( $rootItem in $hashA.GetEnumerator() ) {
-
-            # key value pair we are looking at
-            $rootItemKey = $rootItem.key
-            $rootItemValue = $rootItem.value
-
-            if ( $null -eq $global:recursePath ) {
-                $global:recursePath = $rootItemKey
-            } else {
-                $global:recursePath = $global:recursePath + "." + $rootItemKey
             }
+            
+            if ( $levelType -eq "Hashtable" ) {
 
-            #initialize status checks
-            $rootItemStatus = "notChecked"
-            $rootItemType = "notChecked"
-            $itemOutADDEDStatus = "empty"
-            $itemOutMODIFIEDStatus = "empty"
-            $itemOutREMOVEDStatus = "empty"
+                write-host "$spaces [$levelType]: $($level.key)"
 
-            # find out if $hashB contains this item
-            if ( $hashB.get_item($rootItemKey) ) {
-                
-                # if $hashB contains this item, is it modifed?
-                $valA = $hashA.get_item($rootItemKey)
-                $valB = $hashB.get_item($rootItemKey)
-
-                if ( $valA -eq $valB ) {
-                    $rootItemStatus = "dataMatches"
+                if ( $objB.contains($level.key) ) {
+                    HCCcompare -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+                    continue
                 } else {
-                    $rootItemStatus = "dataMismatch"
-                    $rootItemType = $rootItemValue.GetType().name.tostring()
+                    write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
                 }
 
-            } else {
+            }
+            
+            if ( $levelType -eq "Array" ) {
+            
+                write-host "$spaces [$levelType]: $( $level.key )"
+
+                if ( $objB.contains($level.key) ) {
+                    HCCcompare -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+                    continue
+                } else {
+                    write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
+                }
+
+            }
+            
+            if ( $levelType -eq "String" ) {
+            
+                write-host "$spaces [$levelType]: $( $level.key )"
                 
-                $rootItemStatus = "uniqueItem"
-            }
-
-
-            if ( ($rootItemStatus -eq "uniqueItem") -and ($checkType -eq "additions") ) {
-                $returnObject.ADDED.add( $rootItemKey, $rootItemValue )
-            }
-
-            if ( ($rootItemStatus -eq "uniqueItem") -and ($checkType -eq "removals") ) {
-                $returnObject.REMOVED.add( $rootItemKey, $rootItemValue )
-            }
-
-            if ( $rootItemStatus -eq "dataMismatch" ) {
-                if ( ! $returnObject.MODIFIED.contains($rootItemKey) ) {
-                    if ($rootItemType -eq "Hashtable") {
-                        #
+                # compare with ObjB
+                $objA_val = $objA.get_item( $($level.key) )
+                
+                if ( $null -ne $objB ) {
+                    if ( $objB.contains($level.key) ) {
+                        $objB_val = $objB.get_item( $($level.key) )
                     } else {
-                        $returnObject.MODIFIED.add( $rootItemKey, $rootItemValue )
+                        $objB_val = $null
                     }
+                } else {
+                    $objB_val = $null
                 }
-                            
+                
+                if ( $objA_val -ne $objB_val ) {
+                    if ( $null -eq $objA_val ) {
+                        write-host "$spaces  |_ attribute added:    [ (key):$( $level.key ) (value):$objB_val ]" -ForegroundColor Green
+                    } elseif ($null -eq $objB_val) {
+                        write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) (value):$objA_val ]" -ForegroundColor Red
+                    } else {
+                        write-host "$spaces  |_ attribute modified: (key):$( $level.key ) [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+                    }
+                } 
             }
-
         }
     }
+    
+    if ( $objType -eq "Array" ) {
+        
+        $counter = 0
 
-    function checkNestedHashTable {
-        param ( $nestHashA, $nestHashB, $nestCheckType )
+        $objA | ForEach-Object {
+        
+            $level = $objA[$counter]
+            
+            $levelType = $( $level.gettype().name ).tostring()
+            if ( $levelType -eq "Object[]" ) {
+                $levelType = $( $($level.GetType()).basetype.name ).tostring()
+            }
+              
+            if ( $levelType -eq "Array" ) {
+                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                continue 
+            }
+            
+            if ( $levelType -eq "Hashtable" ) {
+                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                continue
+            }
+            
+            if ( $levelType -eq "String" ) {
+        
+                write-host "$spaces [$levelType]: $level"
+                # compare with ObjB
+                $objA_val = $objA[$counter]
+                
+                
+                if ( $objB.contains($objA_val) ) {
+                    $objB_val = $objB[$counter]
+                } else {
+                    $objB_val = $null
+                }
+                
+                if ($objA_val -ne $objB_val) {
+                    if ($null -eq $objA_val) {
+                        write-host "$spaces  |_ attribute added:    [ (value):$objB_val ]" -ForegroundColor Green
+                    } elseif ($null -eq $objB_val) {
+                        write-host "$spaces  |_ attribute removed:  [ (value):$objA_val ]" -ForegroundColor Red
+                    } else {
+                        write-host "$spaces  |_ attribute modified: [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+                    }
+                }
+            }
+
+            $counter++
+           
+        }
+
+
+
+
+
+        
+        $counter = 0
+
+        $objB | ForEach-Object {
+        
+            $level = $objB[$counter]
+            
+            $levelType = $( $level.gettype().name ).tostring()
+            if ( $levelType -eq "Object[]" ) {
+                $levelType = $( $($level.GetType() ).basetype.name).tostring()
+            }
+              
+            if ( $levelType -eq "Array" ) {
+                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                continue
+            }
+            
+            if ( $levelType -eq "Hashtable" ) {
+                HCCcompare -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                continue
+            }
+            
+            if ( $levelType -eq "String" ) {
+        
+                # compare with ObjA
+                $objB_val = $objB[$counter]
+                
+                
+                if ( $objA.contains($objB_val) ) {
+                    $objA_val = $objA[$counter]
+                } else {
+                    $objA_val = $null
+                }
+                
+                
+                
+                if ( $objA_val -ne $objB_val ) {
+                    
+                    if ( $null -eq $objA_val ) {
+                        write-host "$spaces  |_ attribute added:    [ (value):$objB_val ]" -ForegroundColor green
+                    }
+                }
+            }
+
+            $counter++
+           
+        }
     }
-
-    checkItems -hashA $newObject -hashB $initialObject -checkType "additions" -rescurse $false
-    checkItems -hashA $initialObject -hashB $newObject -checkType "removals" -recurse $false
-
-
-    return $returnObject
 }
-
-
-
-
-
-            $initialObject = @{
-                user1 = @{
-                    firstname = "nathan"
-                    lastname = "lewan"
-                    food = @{
-                        favorite = "sushi"
-                        yuck = "squid"
-                    }
-                }
-            }
-            $newObject = @{
-                user1 = @{
-                    firstname = "nathan"
-                    lastname = "lewan"
-                    food = @{
-                        favorite = "sushi"
-                        yuck = "octopus"
-                    }
-                }
-
-            }
-
-            $test = $null
-            $test = compare-hashtable -initialObject $initialObject -newObject $newObject
