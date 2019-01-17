@@ -1,5 +1,15 @@
 function compare-hashtable {
 
+    <#
+    .Synopsis
+       Find differences between hashtables, even if they contain nested hashtables, or nested arrays. 
+    .DESCRIPTION
+       This allows for multiple different simple output visualizations of the difference between two 
+       hashtables.
+    .EXAMPLE
+       compare-hashtable -objA $initialObject -objB $newObject
+    #>
+
     param ( 
         
         [parameter(
@@ -11,7 +21,7 @@ function compare-hashtable {
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $objA,
+        $objA = @{},
         
         [parameter(
             Mandatory = $false,
@@ -22,7 +32,7 @@ function compare-hashtable {
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $objB, 
+        $objB = @{}, 
         
         [parameter(
             Mandatory = $false,
@@ -33,7 +43,7 @@ function compare-hashtable {
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $spaces, 
+        $spaces = " ", 
         
         [parameter(
             Mandatory = $false,
@@ -44,7 +54,7 @@ function compare-hashtable {
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $objType 
+        $objType = "Hashtable"
     
     )
    
