@@ -7,7 +7,7 @@ function compare-hashtable {
        This allows for multiple different simple output visualizations of the difference between two 
        hashtables.
     .EXAMPLE
-       compare-hashtable -objA $initialObject -objB $newObject
+       compare-hashtable -objA $initialObject -objB $newObject -outputFormat "simple-string"
     #>
 
     param ( 
@@ -33,10 +33,21 @@ function compare-hashtable {
         [AllowEmptyString()]
         [AllowEmptyCollection()]
         $objB = @{}, 
-        
+
         [parameter(
             Mandatory = $false,
             Position = 2,
+            HelpMessage = "The second HashTable Object that you want to compare"
+        )]
+        [Alias("newObject")]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [AllowEmptyCollection()]
+        $objB = @{},
+        
+        [parameter(
+            Mandatory = $false,
+            Position = 3,
             HelpMessage = "When printing out info as a string, how big the indent should be (handled automatically)"
         )]
         [Alias("indent")]
@@ -47,14 +58,14 @@ function compare-hashtable {
         
         [parameter(
             Mandatory = $false,
-            Position = 3,
-            HelpMessage = "used when called recursively to identify what we are recursing over (handled automatically)"
+            Position = 4,
+            HelpMessage = "pick what type of output you want to display"
         )]
-        [Alias("type")]
+        [Alias("outform")]
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $objType = "Hashtable"
+        $outputFormat = "simple-string"
     
     )
    
