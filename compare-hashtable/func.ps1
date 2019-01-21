@@ -2,10 +2,33 @@ function compare-hashtable {
 
     <#
     .Synopsis
-       Find differences between hashtables, even if they contain nested hashtables, or nested arrays. 
+       Find differences between hashtables even if they contain nested hashtables, or nested arrays. 
     .DESCRIPTION
        This allows for multiple different simple output visualizations of the difference between two 
-       hashtables.
+       hashtables. Hashtables can contain nested hashtables, or nested arrays.
+
+    .PARAMETER objA
+        The first object to be compared. Usually it is the initial object. It can be an array, or a 
+        hashtable.
+
+    .PARAMETER  objB
+        The second object to be compared. Usually it is the object as it has been modified. It can be an 
+        array, or a hashtable.
+
+    .PARAMETER objType
+        The type of object we are comparing. This is used mainly for recursive function calls within this
+        command. As this supports arrays, hashtables, and objects containing both, this is used to define 
+        what we are iterating over at any given time.
+
+    .PARAMETER spaces
+        This is used mainly during recursive calls as well. This assists in indentation when simple text is
+        selected as the output.
+
+    .PARAMETER outputFormat
+        This is to choose how the information is outputted. 
+            'simple-text' ... will output text strings identifying changes.
+            'object' ........ will output a PScustomObject of the differences.
+
     .EXAMPLE
        compare-hashtable -objA $initialObject -objB $newObject -outputFormat "simple-string"
     #>
@@ -37,19 +60,21 @@ function compare-hashtable {
         [parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "The second HashTable Object that you want to compare"
+            HelpMessage = "type of object being looked at. Used in recursive capacity (handled automatically)"
         )]
-        [Alias("newObject")]
+        [String[]]
+        [Alias("object")]
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $objB = @{},
+        $objType = "Hashtable",
         
         [parameter(
             Mandatory = $false,
             Position = 3,
             HelpMessage = "When printing out info as a string, how big the indent should be (handled automatically)"
         )]
+        [String[]]
         [Alias("indent")]
         [AllowNull()]
         [AllowEmptyString()]
@@ -59,8 +84,10 @@ function compare-hashtable {
         [parameter(
             Mandatory = $false,
             Position = 4,
-            HelpMessage = "pick what type of output you want to display"
+            HelpMessage = "pick what type of output you want to display: 
+            simple-string: simple add/remove/modify text output"
         )]
+        [String[]]
         [Alias("outform")]
         [AllowNull()]
         [AllowEmptyString()]
@@ -84,33 +111,33 @@ function compare-hashtable {
             
             if ( $levelType -eq "Hashtable" ) {
 
-                write-host "$spaces [$levelType]: $($level.key)"
+                #write-host "$spaces [$levelType]: $($level.key)"
 
                 if ( $objB.contains($level.key) ) {
                     compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
                     continue
                 } else {
-                    write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
+                    write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
                 }
 
             }
             
             if ( $levelType -eq "Array" ) {
             
-                write-host "$spaces [$levelType]: $( $level.key )"
+                #write-host "$spaces [$levelType]: $( $level.key )"
 
                 if ( $objB.contains($level.key) ) {
                     compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
                     continue
                 } else {
-                    write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
+                    write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
                 }
 
             }
             
             if ( $levelType -eq "String" ) {
             
-                write-host "$spaces [$levelType]: $( $level.key )"
+                #write-host "$spaces [$levelType]: $( $level.key )"
                 
                 # compare with ObjB
                 $objA_val = $objA.get_item( $($level.key) )
@@ -127,11 +154,11 @@ function compare-hashtable {
                 
                 if ( $objA_val -ne $objB_val ) {
                     if ( $null -eq $objA_val ) {
-                        write-host "$spaces  |_ attribute added:    [ (key):$( $level.key ) (value):$objB_val ]" -ForegroundColor Green
+                        write-host "$spaces  [+] attribute added:    [ (key):$( $level.key ) (value):$objB_val ]" -ForegroundColor Green
                     } elseif ($null -eq $objB_val) {
-                        write-host "$spaces  |_ attribute removed:  [ (key):$( $level.key ) (value):$objA_val ]" -ForegroundColor Red
+                        write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) (value):$objA_val ]" -ForegroundColor Red
                     } else {
-                        write-host "$spaces  |_ attribute modified: (key):$( $level.key ) [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+                        write-host "$spaces  [*] attribute modified: (key):$( $level.key ) [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
                     }
                 } 
             }
@@ -176,11 +203,11 @@ function compare-hashtable {
                 
                 if ($objA_val -ne $objB_val) {
                     if ($null -eq $objA_val) {
-                        write-host "$spaces  |_ attribute added:    [ (value):$objB_val ]" -ForegroundColor Green
+                        write-host "$spaces  [+] attribute added:    [ (value):$objB_val ]" -ForegroundColor Green
                     } elseif ($null -eq $objB_val) {
-                        write-host "$spaces  |_ attribute removed:  [ (value):$objA_val ]" -ForegroundColor Red
+                        write-host "$spaces  [-] attribute removed:  [ (value):$objA_val ]" -ForegroundColor Red
                     } else {
-                        write-host "$spaces  |_ attribute modified: [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+                        write-host "$spaces  [*] attribute modified: [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
                     }
                 }
             }
@@ -232,7 +259,7 @@ function compare-hashtable {
                 if ( $objA_val -ne $objB_val ) {
                     
                     if ( $null -eq $objA_val ) {
-                        write-host "$spaces  |_ attribute added:    [ (value):$objB_val ]" -ForegroundColor green
+                        write-host "$spaces  [+] attribute added:    [ (value):$objB_val ]" -ForegroundColor green
                     }
                 }
             }
