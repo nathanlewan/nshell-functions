@@ -20,10 +20,6 @@ function compare-hashtable {
         command. As this supports arrays, hashtables, and objects containing both, this is used to define 
         what we are iterating over at any given time.
 
-    .PARAMETER spaces
-        This is used mainly during recursive calls as well. This assists in indentation when simple text is
-        selected as the output.
-
     .PARAMETER outputFormat
         This is to choose how the information is outputted. 
             'simple-text' ... will output text strings identifying changes.
@@ -71,31 +67,22 @@ function compare-hashtable {
         
         [parameter(
             Mandatory = $false,
-            Position = 3,
-            HelpMessage = "When printing out info as a string, how big the indent should be (handled automatically)"
-        )]
-        [String[]]
-        [Alias("indent")]
-        [AllowNull()]
-        [AllowEmptyString()]
-        [AllowEmptyCollection()]
-        $spaces = " ", 
-        
-        [parameter(
-            Mandatory = $false,
             Position = 4,
             HelpMessage = "pick what type of output you want to display: 
-            simple-string: simple add/remove/modify text output"
+            'simple-text' .... simple add/remove/modify text output
+            'object' ......... output differences as a PScustomObject"
         )]
         [String[]]
         [Alias("outform")]
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        $outputFormat = "simple-string"
+        $outputFormat = "simple-text"
     
     )
    
+
+    $outObject = @()
 
     if ( $objType -eq "Hashtable") {
         
@@ -114,10 +101,26 @@ function compare-hashtable {
                 #write-host "$spaces [$levelType]: $($level.key)"
 
                 if ( $objB.contains($level.key) ) {
-                    compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+
+                    compare-hashtable `
+                        -objA $objA.$( $level.key ) `
+                        -objB $objB.$( $level.key ) `
+                        -objType $levelType
+
                     continue
                 } else {
-                    write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
+                    switch ($outputFormat)
+                    {
+                        "simple-text" {
+                            $outObject += "[-]: [ (key):$( $level.key ) ]"
+                        }
+                        "object" {
+
+                        }
+                        default {
+                            $outObject += "error_no_valid_outputFormat_option"
+                        }
+                    }
                 }
 
             }
@@ -127,10 +130,27 @@ function compare-hashtable {
                 #write-host "$spaces [$levelType]: $( $level.key )"
 
                 if ( $objB.contains($level.key) ) {
-                    compare-hashtable -objA $objA.$( $level.key ) -objB $objB.$( $level.key ) -spaces "$spaces  " -objType $levelType
+
+                    compare-hashtable `
+                        -objA $objA.$( $level.key ) `
+                        -objB $objB.$( $level.key ) `
+                        -objType $levelType
+
                     continue
                 } else {
-                    write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) ]" -ForegroundColor Red
+                    switch ($outputFormat)
+                    {
+                        "simple-text" {
+                            $outObject += "[-]: [ (key):$( $level.key ) ]"
+                        }
+                        "object" {
+
+                        }
+                        default {
+                            $outObject += "error_no_valid_outputFormat_option"
+                        }
+                    }
+
                 }
 
             }
@@ -154,11 +174,51 @@ function compare-hashtable {
                 
                 if ( $objA_val -ne $objB_val ) {
                     if ( $null -eq $objA_val ) {
-                        write-host "$spaces  [+] attribute added:    [ (key):$( $level.key ) (value):$objB_val ]" -ForegroundColor Green
+
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[+]: [ (key):$( $level.key ) (value):$objB_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     } elseif ($null -eq $objB_val) {
-                        write-host "$spaces  [-] attribute removed:  [ (key):$( $level.key ) (value):$objA_val ]" -ForegroundColor Red
+
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[-]: [ (key):$( $level.key ) (value):$objA_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     } else {
-                        write-host "$spaces  [*] attribute modified: (key):$( $level.key ) [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[*]: (key):$( $level.key )"
+                                $outObject += "   (old_value):$objA_val -> (new_value):$objB_val"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     }
                 } 
             }
@@ -179,18 +239,18 @@ function compare-hashtable {
             }
               
             if ( $levelType -eq "Array" ) {
-                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -objType $levelType
                 continue 
             }
             
             if ( $levelType -eq "Hashtable" ) {
-                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -objType $levelType
                 continue
             }
             
             if ( $levelType -eq "String" ) {
         
-                write-host "$spaces [$levelType]: $level"
+                #write-host "$spaces [$levelType]: $level"
                 # compare with ObjB
                 $objA_val = $objA[$counter]
                 
@@ -203,11 +263,47 @@ function compare-hashtable {
                 
                 if ($objA_val -ne $objB_val) {
                     if ($null -eq $objA_val) {
-                        write-host "$spaces  [+] attribute added:    [ (value):$objB_val ]" -ForegroundColor Green
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[+]: [ (value):$objB_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     } elseif ($null -eq $objB_val) {
-                        write-host "$spaces  [-] attribute removed:  [ (value):$objA_val ]" -ForegroundColor Red
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[-]: [ (value):$objA_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     } else {
-                        write-host "$spaces  [*] attribute modified: [ (old_value):$objA_val -> (new_value):$objB_val ]" -ForegroundColor Yellow
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[*]: [ (old_value):$objA_val -> (new_value):$objB_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     }
                 }
             }
@@ -233,12 +329,12 @@ function compare-hashtable {
             }
               
             if ( $levelType -eq "Array" ) {
-                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces -objType $levelType
                 continue
             }
             
             if ( $levelType -eq "Hashtable" ) {
-                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces "$spaces  " -objType $levelType
+                compare-hashtable -objA $objA[$counter] -objB $objB[$counter] -spaces -objType $levelType
                 continue
             }
             
@@ -259,7 +355,20 @@ function compare-hashtable {
                 if ( $objA_val -ne $objB_val ) {
                     
                     if ( $null -eq $objA_val ) {
-                        write-host "$spaces  [+] attribute added:    [ (value):$objB_val ]" -ForegroundColor green
+
+                        switch ($outputFormat)
+                        {
+                            "simple-text" {
+                                $outObject += "[+]: [ (value):$objB_val ]"
+                            }
+                            "object" {
+
+                            }
+                            default {
+                                $outObject += "error_no_valid_outputFormat_option"
+                            }
+                        }
+
                     }
                 }
             }
@@ -268,4 +377,6 @@ function compare-hashtable {
            
         }
     }
+
+    return $outObject
 }
