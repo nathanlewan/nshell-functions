@@ -22,7 +22,7 @@ function compare-hashtable {
 
     .PARAMETER outputFormat
         This is to choose how the information is outputted. 
-            'simple-text' ... will output text strings identifying changes.
+            'simple-text' ... will output text strings identifying changes (comma delimited).
             'object' ........ will output a PScustomObject of the differences.
 
     .EXAMPLE
@@ -112,7 +112,7 @@ function compare-hashtable {
                     switch ($outputFormat)
                     {
                         "simple-text" {
-                            $outObject += "[-]: [ (key):$( $level.key ) ]"
+                            $outObject += "[-] , (key):$( $level.key )"
                         }
                         "object" {
 
@@ -141,7 +141,7 @@ function compare-hashtable {
                     switch ($outputFormat)
                     {
                         "simple-text" {
-                            $outObject += "[-]: [ (key):$( $level.key ) ]"
+                            $outObject += "[-] , (key):$( $level.key )"
                         }
                         "object" {
 
@@ -178,7 +178,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[+]: [ (key):$( $level.key ) (value):$objB_val ]"
+                                $outObject += "[+] , (key):$( $level.key ) , (value):$objB_val"
                             }
                             "object" {
 
@@ -193,7 +193,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[-]: [ (key):$( $level.key ) (value):$objA_val ]"
+                                $outObject += "[-] , (key):$( $level.key ) , (value):$objA_val"
                             }
                             "object" {
 
@@ -208,8 +208,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[*]: (key):$( $level.key )"
-                                $outObject += "   (old_value):$objA_val -> (new_value):$objB_val"
+                                $outObject += "[*] , (key):$( $level.key ) , (old_value):$objA_val , (new_value):$objB_val"
                             }
                             "object" {
 
@@ -266,7 +265,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[+]: [ (value):$objB_val ]"
+                                $outObject += "[+] , (value):$objB_val"
                             }
                             "object" {
 
@@ -280,7 +279,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[-]: [ (value):$objA_val ]"
+                                $outObject += "[-] , (value):$objA_val"
                             }
                             "object" {
 
@@ -294,7 +293,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[*]: [ (old_value):$objA_val -> (new_value):$objB_val ]"
+                                $outObject += "[*] , (old_value):$objA_val , (new_value):$objB_val"
                             }
                             "object" {
 
@@ -359,7 +358,7 @@ function compare-hashtable {
                         switch ($outputFormat)
                         {
                             "simple-text" {
-                                $outObject += "[+]: [ (value):$objB_val ]"
+                                $outObject += "[+] , (value):$objB_val"
                             }
                             "object" {
 
