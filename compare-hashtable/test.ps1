@@ -76,7 +76,8 @@ Describe 'compare-hashtable' {
                 }
             }
 
-            $test = compare-hashtable -objA $initialObject -objB $newObject -objType "Hashtable"
+            clear
+            compare-hashtable -objA $initialObject -objB $newObject -objType "Hashtable"
 
             $test.gettype().BaseType.Name | should be "Array"
             $test.length | should be 3
