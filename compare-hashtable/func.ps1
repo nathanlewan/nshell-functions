@@ -123,7 +123,13 @@ function compare-hashtable {
       
       if ( $levelType -eq "Hashtable" ) {
 
-        #write-host "$spaces [$levelType]: $($level.key)"
+        $fullKeyPath = $null
+
+        if ($null -eq $keyName) {
+          $fullKeyPath = $($level.key)
+        } else {
+          $fullKeyPath = "(key:)$($keyname) -> (key):$($level.key)"
+        }
 
         if ( $objB.contains($level.key) ) {
 
@@ -131,7 +137,7 @@ function compare-hashtable {
             -objA $objA.$( $level.key ) `
             -objB $objB.$( $level.key ) `
             -objType $levelType `
-            -keyName $($level.key)
+            -keyName $fullKeyPath
 
           continue
           
