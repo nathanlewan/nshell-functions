@@ -92,7 +92,7 @@ function compare-hashtable {
     [parameter(
       Mandatory = $false,
       Position = 2,
-      HelpMessage = "type of object being looked at. Used in recursive capacity (handled automatically)"
+      HelpMessage = "type of object being looked at. Used in recursive capacity"
     )]
     [String[]]
     [Alias("object")]
@@ -120,7 +120,7 @@ function compare-hashtable {
     [parameter(
       Mandatory = $false,
       Position = 5,
-      HelpMessage = "the name of the key we are recursing on. Used in recursive capacity (handled automatically)"
+      HelpMessage = "the name of the key we are recursing on. Used in recursive capacity"
     )]
     [String[]]
     [Alias("name")]
@@ -133,7 +133,7 @@ function compare-hashtable {
     [parameter(
       Mandatory = $false,
       Position = 6,
-      HelpMessage = "the name of the key we are recursing on. Used in recursive capacity (handled automatically)"
+      HelpMessage = "the name of the key we are recursing on. Used in recursive capacity"
     )]
     [Array[]]
     [Alias("output")]
@@ -144,7 +144,8 @@ function compare-hashtable {
   
   )
 
-
+  $counter = 0
+  
   if ( $objType -eq "Hashtable") {
     
     foreach ( $level in $objA.getenumerator() ) {
@@ -178,17 +179,17 @@ function compare-hashtable {
             -keyName $fullKeyPath `
             -outObject $outObject
 
-          continue
-          
         } else {
           switch ($outputFormat)
           {
             "simple-text" {
 
               if ( ($null -ne $keyname) -and ($keyName -ne $($level.key))) {
-                $outObject += "[-] , $($keyname) , (key):$( $level.key )"
+                $outObject += "[-] , $($keyname) , (key_removed):$( $level.key )"
+                #write-host "[-] , $($keyname) , (key_removed):$( $level.key )"
               } else {
-                $outObject += "[-] , (key):$( $level.key )"
+                $outObject += "[-] , (key_removed):$( $level.key )"
+                #write-host "[-] , (key_removed):$( $level.key )"
               }
               
             }
@@ -200,9 +201,8 @@ function compare-hashtable {
             }
           }
         }
-
       }
-      
+
       if ( $levelType -eq "Array" ) {
       
         #write-host "$spaces [$levelType]: $( $level.key )"
@@ -222,16 +222,17 @@ function compare-hashtable {
             -keyName $fullKeyPath `
             -outObject $outObject
 
-          continue
         } else {
           switch ($outputFormat)
           {
             "simple-text" {
 
               if ( ($null -ne $keyname) -and ($keyName -ne $($level.key))) {
-                $outObject += "[-] , (arr):$( $keyname ) , (key):$( $level.key )"
+                $outObject += "[-] , (arr):$( $keyname ) , (key_removed):$( $level.key )"
+                #write-host "[-] , (arr):$( $keyname ) , (key_removed):$( $level.key )"
               } else {
-                $outObject += "[-] , (arr):$( $level.key )"
+                $outObject += "[-] , (arr_removed):$( $level.key )"
+                #write-host "[-] , (arr_removed):$( $level.key )"
               }
 
             }
@@ -244,9 +245,8 @@ function compare-hashtable {
           }
 
         }
-
       }
-      
+
       if ( $levelType -eq "String" ) {
       
         #write-host "$spaces [$levelType]: $( $level.key )"
@@ -272,9 +272,11 @@ function compare-hashtable {
               "simple-text" {
 
                 if ( ($null -ne $keyname) -and ($keyName -ne $($level.key))) {
-                  $outObject += "[+] , (key):$( $keyName ) -> ( $level.key ) , (value):$objB_val"
+                  $outObject += "[+] , $( $keyName ) -> (key):( $level.key ) , (value):$objB_val"
+                  #write-host "[+] , $( $keyName ) -> (key):( $level.key ) , (value):$objB_val"
                 } else {
                   $outObject += "[+] , (key):$( $level.key ) , (value):$objB_val"
+                  #write-host "[+] , (key):$( $level.key ) , (value):$objB_val"
                 }
 
               }
@@ -293,9 +295,11 @@ function compare-hashtable {
               "simple-text" {
 
                 if ( ($null -ne $keyname) -and ($keyName -ne $($level.key))) {
-                  $outObject += "[-] , (key):$( $keyName ) -> $( $level.key ) , (value):$objA_val"
+                  $outObject += "[-] , $( $keyName ) -> $( $level.key ) , (value_removed):$objA_val"
+                  #write-host "[-] , $( $keyName ) -> $( $level.key ) , (value_removed):$objA_val"
                 } else {
-                  $outObject += "[-] , (key):$( $level.key ) , (value):$objA_val"
+                  $outObject += "[-] , (key):$( $level.key ) , (value_removed):$objA_val"
+                  #write-host "[-] , (key):$( $level.key ) , (value_removed):$objA_val"
                 }
 
               }
@@ -315,10 +319,14 @@ function compare-hashtable {
 
                 if ( ($null -ne $keyname) -and ($keyName -ne $($level.key))) {
                   $outObject += 
-                    "[*] , (key):$( $keyName ) -> $( $level.key ) , (old_value):$objA_val  | (new_value):$objB_val"
+                    "[*] , $( $keyName ) -> (key):$( $level.key ) , " +
+                      "(old_value):$objA_val | (new_value):$objB_val"
+                  #write-host "[*] , $( $keyName ) -> (key):$( $level.key ) , (old_value):$objA_val | (new_value):$objB_val"
                 } else {
                   $outObject += 
-                    "[*] , (key):$( $level.key ) , (old_value):$objA_val | (new_value):$objB_val"
+                    "[*] , (key):$( $level.key ) , " +
+                      "(old_value):$objA_val | (new_value):$objB_val"
+                  #write-host "[*] , (key):$( $level.key ) , (old_value):$objA_val | (new_value):$objB_val"
                 }
 
                 
@@ -331,7 +339,7 @@ function compare-hashtable {
               }
             }
           }
-        } 
+        }
       }
     }
   }
@@ -361,7 +369,7 @@ function compare-hashtable {
         if ($null -eq $keyName) {
           $fullKeyPath = $($level.key)
         } else {
-          $fullKeyPath = "(key:)$($keyname) -> (arr):$($level.key)"
+          $fullKeyPath = "$($keyname) -> (arr):$($level.key)"
         }
         
         compare-hashtable `
@@ -371,7 +379,6 @@ function compare-hashtable {
           -keyName $fullKeyPath `
           -outObject $outObject
 
-        continue 
       }
       
       if ( $levelType -eq "Hashtable" ) {
@@ -383,7 +390,6 @@ function compare-hashtable {
           -keyName $keyName `
           -outObject $outObject
 
-        continue
       }
       
       if ( $levelType -eq "String" ) {
@@ -405,6 +411,7 @@ function compare-hashtable {
             {
               "simple-text" {
                 $outObject += "[+] , (arr):$( $keyName ) , (value):$objB_val"
+                #write-host "[+] , (arr):$( $keyName ) , (value):$objB_val"
               }
               "object" {
 
@@ -418,7 +425,8 @@ function compare-hashtable {
             switch ($outputFormat)
             {
               "simple-text" {
-                $outObject += "[-] , $($keyName) , (value):$objA_val"
+                $outObject += "[-] , $($keyName) , (value_removed):$objA_val"
+                #write-host "[-] , $($keyName) , (value_removed):$objA_val"
               }
               "object" {
 
@@ -432,7 +440,9 @@ function compare-hashtable {
             switch ($outputFormat)
             {
               "simple-text" {
-                $outObject += "[*] , (arr):$( $keyName ) , (old_value):$objA_val | (new_value):$objB_val"
+                $outObject += "[*] , $( $keyName ) , " +
+                  "(old_value):$objA_val | (new_value):$objB_val"
+                #write-host "[*] , $( $keyName ) , (old_value):$objA_val | (new_value):$objB_val"
               }
               "object" {
 
@@ -447,14 +457,9 @@ function compare-hashtable {
       }
 
       $counter++
-       
+
     }
 
-
-
-
-
-    
     $counter = 0
 
     $objB | ForEach-Object {
@@ -482,7 +487,6 @@ function compare-hashtable {
           -keyName $keyName `
           -outObject $outObject
 
-        continue
       }
       
       if ( $levelType -eq "Hashtable" ) {
@@ -494,7 +498,6 @@ function compare-hashtable {
           -keyName $keyName `
           -outObject $outObject
 
-        #continue
       }
       
       if ( $levelType -eq "String" ) {
@@ -519,6 +522,7 @@ function compare-hashtable {
             {
               "simple-text" {
                 $outObject += "[+] , $( $keyName ) , (value):$objB_val"
+                #write-host "[+] , $( $keyName ) , (value):$objB_val"
               }
               "object" {
 
@@ -533,11 +537,16 @@ function compare-hashtable {
       }
 
       $counter++
-       
+
     }
   }
 
-  return $outObject
+  if ( ! ($counter -gt 0) ) {
+    return $outObject
+  } else {
+    continue
+  }
+  
 }
 
 
