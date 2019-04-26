@@ -1,8 +1,3 @@
-$initial = @("nlewan", "lewan", @("test1", @("test2")))
-$new = @("nlewan", "nathan")
-
-
-
 function compare-nsArray {
 
     param 
@@ -49,9 +44,8 @@ function compare-nsArray {
         }
     }
 
-    $initialArrayLength = $initialArray.Length
+    #$initialArrayLength = $initialArray.Length
     $newArrayLength = $newArray.Length
-
 
 
     # check for additions
@@ -60,51 +54,45 @@ function compare-nsArray {
 
     while ($arraySpotCounter -lt $newArrayLength) {
 
-        $newArrayItem = $newArray[$arraySpotCounter]
 
+        $newArrayItem = $newArray[$arraySpotCounter]
         $recursionNeeded = $(  (checkEntry -passedObject $newArrayItem) -eq "array"  )
 
-        if `
-            ( `
-                ($recursionNeeded -eq $true) `
-                -and ($newArrayItem.count -gt 0) `
-                -and ($initialArrayMatchingItem -gt 0) `
-            )
 
-            {
-                debugLog -message "newArray needs recursion" ###
+        if (  ($recursionNeeded -eq $true) -and ($newArrayItem.count -gt 0)  ) {
 
-                $initialArrayMatchingItem = $initialArray[$arraySpotCounter]
+
+            # try to find similar item in initialArray at the same spot as in the newArray
+            $initialArrayMatchingItemCheck = $initialArray[$arraySpotCounter]
+            $isAnArray = $(  (checkEntry -passedObject $initialArrayMatchingItemCheck) -eq "array"  )
+
+            if (  ($isAnArray -eq $true)  ) {
 
                 $returnOutObject = compare-nsArray `
-                    -initialArray $initialArrayMatchingItem `
+                    -initialArray $initialArrayMatchingItemCheck `
                     -newArray $newArrayItem `
                     -returnOutObject $returnOutObject `
                     -recursiveCall $true
+
+            } else {
+                $returnOutObject += ";[+] $($newArrayItem)"
             }
 
-        else 
+        } else {
+            if (  -not($initialArray.contains($newArrayItem))  ) {
 
-            {
-                if (  -not($initialArray.contains($newArrayItem))  )
-                {
-                    if (  $recursionNeeded -eq $true  ) 
-                    {
-                        $returnOutObject += "[+] $newArrayItem"
-                    } else {
-                        $returnOutObject += "[+] $newArrayItem"
-                    }
-                    
-                }
+                $returnOutObject += ";[+] $newArrayItem"
+ 
             }
+
+        }
 
         $arraySpotCounter ++
-        
 
     }
 
 
-
+    <#
     # check for removals
 
     $arraySpotCounter = 0
@@ -155,24 +143,77 @@ function compare-nsArray {
         $arraySpotCounter ++
 
     }
+    #>
 
-    if (  $recursiveCall -eq $true  )
-    {
+    if (  $recursiveCall -eq $true  ) {
 
         return $returnOutObject
 
-    } else 
-    {
+    } else {
 
-        return @{
-            newArray = $newArray
-            changes = $returnOutObject
+        $finalReturnObject = @()
+        $initialreturnOutObject = $returnOutObject -split ";"
+
+        $initialreturnOutObject | ForEach-Object {
+            if (  -not($_ -eq "")  ) {
+                $finalReturnObject += $_
+            }
         }
 
+        return $finalReturnObject
+
     }
-    
 
 }
+
+
+
+
+
+$initial = `
+    @(
+        "nathan", 
+        "lewan",
+        @(
+            @(
+                "arrayItem1",
+                "arrayItem2"
+             ), 
+            @(
+                "secondArray1",
+                "secondArray2"
+             )
+         )
+     )
+
+
+$new =  `
+    @(
+        "nlewan", 
+        "lewan",
+        @(
+            @(
+                "arrayItem1",
+                "arrayItem2"
+             ), 
+            @(
+                "secondArray1",
+                "secondArray2",
+                "secondArray3"
+             ),
+             @(
+                "3Array1",
+                "3Array2",
+                "3Array3"
+             ),
+             @(
+                "4Array1",
+                "4Array2"
+             )
+         )
+     )
+
+clear-host
 
 $test = compare-nsArray -initialArray $initial -newArray $new
 
