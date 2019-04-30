@@ -1,132 +1,74 @@
-clear
 
-Describe 'compare-nsobject' {
-    Context 'test function: checkEntry - Hashtable detection' {
+Describe 'compare-nsArray' {
+    Context 'string detection' {
 
-        it 'should return @(Hashtable, <empty>)' {
-            $Object = @{
-                username = "nathanl"
-            }
-              
+        it 'should return no changes' {
+            $Object1 = @("nathanl")
+            $Object2 = @("nathanl")
 
-            $test = compare-nsObject -objA $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: Hashtable", "OBJB: ")
-            $test.Length | should be 2
-
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test | should be $null
+            $test.Length | should be 0
         }
 
-        it 'should return @(<empty>, Hashtable)' {
-            $Object = @{
-                username = "nathanl"
-            }
-              
+        it 'should return @("[+] nathan")' {
+            $Object1 = @("nathanl")
+            $Object2 = @("nathan")
 
-            $test = compare-nsObject -objb $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: ", "OBJB: Hashtable")
-            $test.Length | should be 2
-
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().Name | should be "String"
+            $test | should be "[+] nathan"
+            $test.Length | should be 10
         }
 
-        it 'should return @(Hashtable, Hashtable)' {
-            $ObjectA = @{
-                username = "nathanl"
-            }
-            $ObjectB = @{
-                username = "nathanl"
-            }
-              
+        it 'should return @("[+] nathan", "[+] lewan")' {
+            $Object1 = @("nathanl")
+            $Object2 = @("nathan", "lewan")
 
-            $test = compare-nsObject -objb $ObjectA -objA $ObjectB -runCheckEntry $true
-
-            $test | should be @("OBJA: Hashtable", "OBJB: Hashtable")
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().BaseType.Name | should be "Array"
+            $test | should be @("[+] nathan", "[+] lewan")
             $test.Length | should be 2
-
         }
 
-    }
+        it 'should return @("[+] nathan", "[+] lewan", "[+] christopher)' {
+            $Object1 = @("nathanl")
+            $Object2 = @("nathan", "lewan", "christopher")
 
-
-
-
-    Context 'test function: checkEntry - Array detection' {
-
-        it 'should return @(Array, <empty>)' {
-            $Object = @("nathanl")
-              
-
-            $test = compare-nsObject -objA $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: Array", "OBJB: ")
-            $test.Length | should be 2
-
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().BaseType.Name | should be "Array"
+            $test | should be @("[+] nathan", "[+] lewan", "[+] christopher")
+            $test.Length | should be 3
         }
 
-        it 'should return @(<empty>, Array)' {
-            $Object = @("nathanl")
-              
+        it 'should return @("[+] lewan", "[+] christopher)' {
+            $Object1 = @("nathan")
+            $Object2 = @("nathan", "lewan", "christopher")
 
-            $test = compare-nsObject -objb $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: ", "OBJB: Array")
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().BaseType.Name | should be "Array"
+            $test | should be @("[+] lewan", "[+] christopher")
             $test.Length | should be 2
-
         }
 
-        it 'should return @(Array, Array)' {
-            $ObjectA = @("nathanl")
-            $ObjectB = @("nathanl")
-              
+        it 'should return @("[+] lewan", "[+] christopher)' {
+            $Object1 = @("nathan")
+            $Object2 = @("lewan", "nathan", "christopher")
 
-            $test = compare-nsObject -objb $ObjectA -objA $ObjectB -runCheckEntry $true
-
-            $test | should be @("OBJA: Array", "OBJB: Array")
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().BaseType.Name | should be "Array"
+            $test | should be @("[+] lewan", "[+] christopher")
             $test.Length | should be 2
-
         }
 
-    }
+        it 'should return @("[+] lewan", "[+] christopher)' {
+            $Object1 = @("nathan")
+            $Object2 = @("lewan", "christopher", "nathan")
 
-
-
-
-
-    Context 'test function: checkEntry - String detection' {
-
-        it 'should return @(String, <empty>)' {
-            $Object = "nathanl"
-              
-
-            $test = compare-nsObject -objA $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: String", "OBJB: ")
+            $test = compare-nsArray -initialArray $Object1 -newArray $Object2
+            $test.GetType().BaseType.Name | should be "Array"
+            $test | should be @("[+] lewan", "[+] christopher")
             $test.Length | should be 2
-
         }
-
-        it 'should return @(<empty>, String)' {
-            $Object = "nathanl"
-              
-
-            $test = compare-nsObject -objb $Object -runCheckEntry $true
-
-            $test | should be @("OBJA: ", "OBJB: String")
-            $test.Length | should be 2
-
-        }
-
-        it 'should return @(String, String)' {
-            $ObjectA = "nathanl"
-            $ObjectB = "nathanl"
-              
-
-            $test = compare-nsObject -objb $ObjectA -objA $ObjectB -runCheckEntry $true
-
-            $test | should be @("OBJA: String", "OBJB: String")
-            $test.Length | should be 2
-
-        }
-
     }
 }
